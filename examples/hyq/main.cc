@@ -1,28 +1,23 @@
 #include <dart/dart.hpp>
+#include <dart/dynamics/SmartPointer.hpp>
 #include <dart/dynamics/WeldJoint.hpp>
 #include <dart/dynamics/ZeroDofJoint.hpp>
 #include <dart/gui/osg/osg.hpp>
 #include <dart/math/Helpers.hpp>
 #include <dart/utils/urdf/DartLoader.hpp>
 
+#include <HyqWorldNode.hpp>
+
 using namespace dart;
 
-int main()
+dynamics::SkeletonPtr
+createFloor(void)
 {
-  dart::utils::DartLoader loader;
-
-  loader.addPackageDirectory("hyq_urdf", "/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf");
-  dynamics::SkeletonPtr robot
-    = loader.parseSkeleton("/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf/urdf/hyq.urdf");
-
-  robot->setName("hyq");
-  
-  // Create floor
-  auto floor_shape = std::make_shared<dynamics::BoxShape>(Eigen::Vector3d(5.0, 5.0, 0.2));
-  auto floor_skeleton = dynamics::Skeleton::create();
-  auto floorAndWorld
+  const auto floor_shape = std::make_shared<dynamics::BoxShape>(Eigen::Vector3d(5.0, 5.0, 0.2));
+  const auto floor_skeleton = dynamics::Skeleton::create();
+  const auto floorAndWorld
     = floor_skeleton->createJointAndBodyNodePair<dynamics::WeldJoint>();
-  auto floor_body = floorAndWorld.second;
+  const auto floor_body = floorAndWorld.second;
   floor_body->createShapeNodeWith<
     dynamics::VisualAspect,
     dynamics::CollisionAspect,
@@ -30,6 +25,28 @@ int main()
   Eigen::Isometry3d floor_tf(Eigen::Isometry3d::Identity());
   floor_tf.translation().z() = -0.8;
   floor_body->getParentJoint()->setTransformFromParentBodyNode(floor_tf);
+  return floor_skeleton;
+}
+
+dynamics::SkeletonPtr
+loadHyqRobot(void)
+{
+  dart::utils::DartLoader loader;
+
+  // Load robot from URDF
+  loader.addPackageDirectory("hyq_urdf", "/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf");
+  dynamics::SkeletonPtr robot
+    = loader.parseSkeleton("/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf/urdf/hyq.urdf");
+
+  robot->setName("hyq");
+
+  return robot;
+}
+
+int main()
+{
+  const auto floor_skeleton = createFloor();
+  const auto robot = loadHyqRobot();
 
   // Create a world and add the rigid body
   auto world = simulation::World::create();
@@ -37,8 +54,8 @@ int main()
   world->addSkeleton(floor_skeleton);
 
   // Wrap a WorldNode around it
-  ::osg::ref_ptr<gui::osg::RealTimeWorldNode> node
-      = new gui::osg::RealTimeWorldNode(world);
+  ::osg::ref_ptr<HyqWorldNode> node
+      = new HyqWorldNode(world, robot);
 
   // Create a Viewer and set it up with the WorldNode
   auto viewer = gui::osg::Viewer();
