@@ -6,6 +6,9 @@
 #include <dart/dart.hpp>
 #include <dart/dynamics/SmartPointer.hpp>
 
+class TinyWBC;
+using TinyWBCPtr = std::shared_ptr<TinyWBC>;
+
 class Controller
 {
 public:
@@ -32,6 +35,9 @@ protected:
 private:
   /// \brief Initial state of the robot
   dart::dynamics::Skeleton::Configuration mInitialState;
+
+  /// \brief TinyWBC instance
+  TinyWBCPtr mWBC; 
 };
 
 #endif /* CONTROLLER_H */

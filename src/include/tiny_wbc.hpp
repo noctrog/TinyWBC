@@ -1,6 +1,7 @@
 #ifndef TINY_WBC_H
 #define TINY_WBC_H
 
+#include <dart/math/MathTypes.hpp>
 #include <vector>
 #include <array>
 #include <memory>
@@ -11,9 +12,10 @@
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
 
-namespace talos_wbc_controller {
-  
-class QpFormulation
+class TinyWBC;
+using TinyWBCPtr = std::shared_ptr<TinyWBC>;
+
+class TinyWBC
 {
 public:
 
@@ -44,21 +46,21 @@ public:
   typedef std::array<TaskDynamics, static_cast<size_t>(TaskName::TOTAL_TASKS)> TaskDynamicsList;
   typedef std::vector<ConstraintName> ConstraintList;
   // Robot state
-  typedef std::vector<double> SpatialPos;
-  typedef std::vector<double> SpatialVel;
-  typedef std::vector<double> JointPos;
-  typedef std::vector<double> JointVel;
-  typedef std::vector<double> ComPos;
-  typedef std::vector<double> ComVel;
-  typedef std::vector<double> ComAcc;
-  typedef std::vector<double> BaseRot;
-  typedef std::vector<double> BaseAngVel;
-  typedef std::vector<double> FrameRot;
-  typedef std::vector<double> FrameAngVel;
+  typedef Eigen::VectorXd SpatialPos;
+  typedef Eigen::Vector6d SpatialVel;
+  typedef Eigen::VectorXd JointPos;
+  typedef Eigen::VectorXd JointVel;
+  typedef Eigen::Vector3d ComPos;
+  typedef Eigen::Vector3d ComVel;
+  typedef Eigen::Vector3d ComAcc;
+  typedef Eigen::VectorXd BaseRot;
+  typedef Eigen::Vector3d BaseAngVel;
+  typedef Eigen::Vector3d FrameRot;
+  typedef Eigen::Vector3d FrameAngVel;
   // Robot feedback
-  typedef std::vector<double> PosErrors;
-  typedef std::vector<double> VelErrors;
-  typedef std::vector<double> AccVector;
+  typedef Eigen::VectorXd PosErrors;
+  typedef Eigen::VectorXd VelErrors;
+  typedef Eigen::VectorXd AccVector;
   // Contact names and jacobians
   typedef std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> ContactJacobians;
   // Robot representation
@@ -100,8 +102,8 @@ public:
   // 		   Eigen::aligned_allocator<std::pair<const FrameId, OrientationState>>> DesiredOrientations;
   typedef std::map<FrameId, OrientationState> DesiredOrientations;
 
-  QpFormulation(const std::string& urdf_path);
-  virtual ~QpFormulation() = default;
+  TinyWBC(const std::string& urdf_path);
+  virtual ~TinyWBC() = default;
 
   /**
    * Updates the robot state. It automatically computes the inertia,
@@ -181,9 +183,10 @@ public:
   /**
    * Sets the reference for the CoM
    */
-  void SetDesiredCoM(const ComPos& com_pos,
-		     const ComVel& com_vel = {},
-		     const ComAcc& com_acc = {});
+  void SetDesiredCoM(const ComPos& com_pos);
+  void SetDesiredCoM(const ComPos& com_pos, const ComVel& com_vel);
+  void SetDesiredCoM(const ComPos& com_pos, const ComVel& com_vel,
+		     const ComAcc& com_acc);
 
   /**
    * @brief Sets the desired base_link orientation.
@@ -436,7 +439,5 @@ private:
   // Contact families
   ContactFamilyList contact_families_;
 };
-
-} // namespace talos_wbc_controller
 
 #endif /* TINY_WBC_H */
