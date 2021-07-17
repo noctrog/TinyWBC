@@ -54,11 +54,11 @@ Controller::update()
   const Eigen::Vector3d robot_com_vel = mRobot->getCOMLinearVelocity();
 
   // Send the current state to the controller
-  // TODO: quaternion to Eigen::Vector
   // TODO: Send contacts
   Eigen::VectorXd pin_spatial_pos(7);
   Eigen::Vector6d pin_spatial_vel;
-  pin_spatial_pos << robot_spatial_pos.segment(3, 3), Eigen::VectorXd::Constant(4, 0.0);
+  pin_spatial_pos << robot_spatial_pos.segment(3, 3), robot_base_quat.x(),
+    robot_base_quat.y(), robot_base_quat.z(), robot_base_quat.w();
   pin_spatial_vel << robot_spatial_vel.segment(3, 3), robot_spatial_vel.head(3);
 
   mWBC->SetRobotState(pin_spatial_pos,
