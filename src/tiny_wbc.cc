@@ -250,19 +250,19 @@ TinyWBC::EraseDesiredFrameOrientation(const std::string& frame_name)
 }
 
 void
-TinyWBC::SetPositionErrors(const PosErrors& ep)
+TinyWBC::SetDesiredPosture(const JointPos& posture)
 {
-  ep_ = ep;
+  ep_ = posture - q_.tail(model_->njoints);
 }
 
 void
-TinyWBC::SetVelocityErrors(const VelErrors& ev)
+TinyWBC::SetDesiredPostureVelocity(const JointVel& posture_v)
 {
-  ev_ = ev;
+  ev_ = posture_v - qd_.tail(model_->njoints);
 }
 
 void
-TinyWBC::SetReferenceAccelerations(const AccVector& qrdd)
+TinyWBC::SetPostureReferenceAccelerations(const AccVector& qrdd)
 {
   qrdd_ = qrdd;
 }

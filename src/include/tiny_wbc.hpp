@@ -164,21 +164,26 @@ public:
    */
   void ClearContactFamily(void);
 
-  // Joint state task
-  /** 
-   * Sets the current position error, used to calculate the desired acceleration.
+  /**
+   * @brief Set the desired posture.
+   *
+   * @ref SetRobotState must be called first, since the current
+   * posture is used to calculate the position error.
    */
-  void SetPositionErrors(const PosErrors&);
+  void SetDesiredPosture(const JointPos&);
 
   /** 
-   * Sets the current velocity error, used to calculate the desired acceleration.
+   * @brief Set the desired posture velocity (joint velocities).
+   *
+   * @ref SetRobotState must be called first, since the current
+   * posture velocity is used to calculate the velocity error.
    */
-  void SetVelocityErrors(const VelErrors&);
+  void SetDesiredPostureVelocity(const JointVel&);
 
   /** 
-   * Sets the reference acceleration, used to calculate the desired acceleration.
+   * @brief Sets the desired posture acceleration (joint accelerations).
    */
-  void SetReferenceAccelerations(const AccVector&);
+  void SetPostureReferenceAccelerations(const AccVector&);
 
   /**
    * Sets the reference for the CoM
