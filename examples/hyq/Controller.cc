@@ -30,6 +30,20 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   mWBC->PushConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
   mWBC->PushConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
   mWBC->PushConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
+
+  // Set the friction coefficient
+  mWBC->SetFrictionCoefficient(0.4);
+
+  // Initialize and save the robot initial state
+  mInitialState = mRobot->getConfiguration(dart::dynamics::Skeleton::CONFIG_POSITIONS |
+					   dart::dynamics::Skeleton::CONFIG_VELOCITIES);
+  mInitialState.mPositions << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    -0.14213842558668383, 0.8222834967484725, -1.446773610100507,
+    -0.14213842558668383, 0.8222834967484725, -1.446773610100507,
+    -0.14213842558668383, -0.8222834967484725, 1.446773610100507,
+    -0.14213842558668383, -0.8222834967484725, 1.446773610100507;
+
+  resetRobot();
 }
 
 //==============================================================================
