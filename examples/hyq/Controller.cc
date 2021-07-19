@@ -15,7 +15,7 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
 
   // Activate the tasks
   mWBC->PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
-  mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
+  // mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
 
   // Set the tasks priorities
   mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_JOINT, 0.4);
@@ -39,8 +39,8 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
 					   dart::dynamics::Skeleton::CONFIG_VELOCITIES);
   mInitialState.mPositions << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     -0.14213842558668383, 0.8222834967484725, -1.446773610100507,
-    -0.14213842558668383, 0.8222834967484725, -1.446773610100507,
     -0.14213842558668383, -0.8222834967484725, 1.446773610100507,
+    -0.14213842558668383, 0.8222834967484725, -1.446773610100507,
     -0.14213842558668383, -0.8222834967484725, 1.446773610100507;
 
   resetRobot();
@@ -56,16 +56,14 @@ Controller::~Controller()
 void
 Controller::update()
 {
-  const int nJoints = mRobot->getNumJoints();
-  
+  const int nJoints = mRobot->getNumJoints() - 6;
+
   // Retrieve the robot state
   // TODO: Retrieve contacts
   const Eigen::Isometry3d robot_base_tf = mRobot->getRootBodyNode()->getTransform();
   const Eigen::Quaterniond robot_base_quat(robot_base_tf.rotation());
   const Eigen::VectorXd robot_spatial_pos = mRobot->getPositions();
-  const Eigen::Vector6d robot_spatial_vel = mRobot->getRootBodyNode()->getSpatialVelocity();
-  const Eigen::Vector3d robot_com_pos = mRobot->getCOM();
-  const Eigen::Vector3d robot_com_vel = mRobot->getCOMLinearVelocity();
+  const Eigen::VectorXd robot_spatial_vel = mRobot->getVelocities();
 
   // Send the current state to the controller
   // TODO: Send contacts
@@ -77,16 +75,25 @@ Controller::update()
 
   mWBC->SetRobotState(pin_spatial_pos,
 		      pin_spatial_vel,
-		      robot_spatial_pos.tail(12),
-		      robot_spatial_vel.tail(12),
-		      {});
+		      robot_spatial_pos.tail(nJoints),
+		      robot_spatial_vel.tail(nJoints),
+		      {"lf_foot", "rf_foot", "lh_foot", "rh_foot"});
 
-  // TODO: Send the desired state to the controller
+  // Send the desired state to the controller
+  mWBC->SetDesiredPosture(mInitialState.mPositions.tail(nJoints));
+  mWBC->SetDesiredPostureVelocity(Eigen::VectorXd::Constant(nJoints, 0.0));
+  mWBC->SetPostureReferenceAccelerations(Eigen::VectorXd::Constant(nJoints, 0.0));
+  mWBC->SetDesiredCoM(Eigen::Vector3d(0.0, 0.0, 0.4));
 
-  // TODO: Build and solve problem
+  // Build and solve problem
+  mWBC->BuildProblem();
+  mWBC->SolveProblem();
+  const Eigen::VectorXd sol = mWBC->GetSolution();
 
-  // TODO: Apply the obtained torques
-  
+  // Apply the obtained torques
+  Eigen::VectorXd forces(mRobot->getNumJoints());
+  forces << Eigen::VectorXd::Constant(6, 0.0), sol.tail(nJoints);
+  mRobot->setForces(forces);
 }
 
 //==============================================================================

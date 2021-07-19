@@ -185,7 +185,6 @@ TinyWBC::ClearContactFamily(void)
 void
 TinyWBC::SetDesiredCoM(const ComPos& com_pos)
 {
-  // Position
   des_com_pos_ = com_pos;
 
   b_com_vel_specified_ = false;
@@ -252,13 +251,13 @@ TinyWBC::EraseDesiredFrameOrientation(const std::string& frame_name)
 void
 TinyWBC::SetDesiredPosture(const JointPos& posture)
 {
-  ep_ = posture - q_.tail(model_->njoints);
+  ep_ = posture - q_.tail(model_->njoints - 2);
 }
 
 void
 TinyWBC::SetDesiredPostureVelocity(const JointVel& posture_v)
 {
-  ev_ = posture_v - qd_.tail(model_->njoints);
+  ev_ = posture_v - qd_.tail(model_->njoints - 2);
 }
 
 void
@@ -351,11 +350,6 @@ TinyWBC::UpdateHessianMatrix(void)
 void
 TinyWBC::UpdateGradientMatrix(void)
 {
-  // Joint task cost
-  // Convert joint values to Eigen Vectors
-  Eigen::VectorXd ep  = Eigen::VectorXd::Map(ep_.data(), ep_.size());
-  Eigen::VectorXd ev  = Eigen::VectorXd::Map(ev_.data(), ev_.size());
-  Eigen::VectorXd qrdd = Eigen::VectorXd::Map(qrdd_.data(), qrdd_.size());
   double Kp, Kv;
 
   // Get matrix dimensions
@@ -369,7 +363,7 @@ TinyWBC::UpdateGradientMatrix(void)
     case TaskName::FOLLOW_JOINT: {
       Eigen::VectorXd q_joint(cols);
       GetTaskDynamics(task, Kp, Kv);
-      q_joint << Eigen::VectorXd::Constant(6, 0.0), -(qrdd + Kp * ep + Kv * ev),
+      q_joint << Eigen::VectorXd::Constant(6, 0.0), -(qrdd_ + Kp * ep_ + Kv * ev_),
 	Eigen::VectorXd::Constant(cols - model_->nv, 0.0);
       g_ += q_joint * GetTaskWeight(task);
       break;
@@ -676,7 +670,7 @@ int
 TinyWBC::GetNumConstraints(void) const
 {
   return std::accumulate(active_constraints_.begin(), active_constraints_.end(), 0,
-			 [this](auto &a, auto &b) { return a + this->GetNumConstraintRows(b); });
+			 [this](const auto &a, const auto &b) { return a + this->GetNumConstraintRows(b); });
 }
 
 void
