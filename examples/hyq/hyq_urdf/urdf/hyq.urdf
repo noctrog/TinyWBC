@@ -30,6 +30,11 @@
         <mesh filename="package://hyq_urdf/meshes/trunk/trunk.dae" scale="1 1 1"/>
       </geometry>
     </collision>
+    <inertial>
+      <mass value="58.96" />
+      <inertia ixx="1.5725937" iyy="8.5015928" izz="9.1954911" ixy="0.028375" ixz="-0.203139" iyz="-0.004462"/>
+      <origin xyz="0.01 0.0 0.00358"  />
+    </inertial>
   </link>
   <!-- Joints -->
   <!-- Hip assembly joint -->
@@ -71,6 +76,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/hipassembly.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.93" />
+      <origin xyz="0.04263 0.0 0.16931" />
+      <inertia ixx="0.05071" iyy="0.05486" izz="0.00571" ixy="-0.00004" ixz="-0.00159" iyz="-0.00005" />
+    </inertial>
   </link>
   <!-- Upper leg link -->
   <link name="lf_upperleg">
@@ -80,6 +90,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/upperleg.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.638" />
+      <origin xyz="0.15074 0.0265 0.0" />
+      <inertia ixx="0.00368" iyy="0.02719" izz="0.02811" ixy="-0.00302" ixz="0.0001" iyz="0.00002" />
+    </inertial>
   </link>
   <!-- Lower leg link -->
   <link name="lf_lowerleg">
@@ -89,6 +104,11 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <inertial>
+      <mass value="0.811" />
+      <origin xyz="0.1254 0.00004 -0.0001" />
+      <inertia ixx="0.00047" iyy="0.01256" izz="0.01233" ixy="0.00006" ixz="-0.00001" iyz="0.0" />
+    </inertial>
   </link>
   <!-- Foot link -->
   <link name="lf_foot">
@@ -144,6 +164,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/hipassembly.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.93" />
+      <origin xyz="0.04263 0.0 0.16931" />
+      <inertia ixx="0.05071" iyy="0.05486" izz="0.00571" ixy="-0.00004" ixz="-0.00159" iyz="-0.00005" />
+    </inertial>
   </link>
   <!-- Upper leg link -->
   <link name="rf_upperleg">
@@ -153,6 +178,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/upperleg.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.638" />
+      <origin xyz="0.15074 0.0265 0.0" />
+      <inertia ixx="0.00368" iyy="0.02719" izz="0.02811" ixy="-0.00302" ixz="0.0001" iyz="0.00002" />
+    </inertial>
   </link>
   <!-- Lower leg link -->
   <link name="rf_lowerleg">
@@ -162,6 +192,11 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <inertial>
+      <mass value="0.811" />
+      <origin xyz="0.1254 0.00004 -0.0001" />
+      <inertia ixx="0.00047" iyy="0.01256" izz="0.01233" ixy="0.00006" ixz="-0.00001" iyz="0.0" />
+    </inertial>
   </link>
   <!-- Foot link -->
   <link name="rf_foot">
@@ -217,6 +252,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/hipassembly.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.93" />
+      <origin xyz="0.04263 0.0 0.16931" />
+      <inertia ixx="0.05071" iyy="0.05486" izz="0.00571" ixy="-0.00004" ixz="-0.00159" iyz="-0.00005" />
+    </inertial>
   </link>
   <!-- Upper leg link -->
   <link name="lh_upperleg">
@@ -226,6 +266,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/upperleg.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.638" />
+      <origin xyz="0.15074 0.0265 0.0" />
+      <inertia ixx="0.00368" iyy="0.02719" izz="0.02811" ixy="-0.00302" ixz="0.0001" iyz="0.00002" />
+    </inertial>
   </link>
   <!-- Lower leg link -->
   <link name="lh_lowerleg">
@@ -235,6 +280,11 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <inertial>
+      <mass value="0.811" />
+      <origin xyz="0.1254 0.00004 -0.0001" />
+      <inertia ixx="0.00047" iyy="0.01256" izz="0.01233" ixy="0.00006" ixz="-0.00001" iyz="0.0" />
+    </inertial>
   </link>
   <!-- Foot link -->
   <link name="lh_foot">
@@ -290,6 +340,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/hipassembly.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.93" />
+      <origin xyz="0.04263 0.0 0.16931" />
+      <inertia ixx="0.05071" iyy="0.05486" izz="0.00571" ixy="-0.00004" ixz="-0.00159" iyz="-0.00005" />
+    </inertial>
   </link>
   <!-- Upper leg link -->
   <link name="rh_upperleg">
@@ -299,6 +354,11 @@
         <mesh filename="package://hyq_urdf/meshes/leg/upperleg.dae" scale="1 1 1"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="2.638" />
+      <origin xyz="0.15074 0.0265 0.0" />
+      <inertia ixx="0.00368" iyy="0.02719" izz="0.02811" ixy="-0.00302" ixz="0.0001" iyz="0.00002" />
+    </inertial>
   </link>
   <!-- Lower leg link -->
   <link name="rh_lowerleg">
@@ -308,6 +368,11 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <inertial>
+      <mass value="0.811" />
+      <origin xyz="0.1254 0.00004 -0.0001" />
+      <inertia ixx="0.00047" iyy="0.01256" izz="0.01233" ixy="0.00006" ixz="-0.00001" iyz="0.0" />
+    </inertial>
   </link>
   <!-- Foot link -->
   <link name="rh_foot">
