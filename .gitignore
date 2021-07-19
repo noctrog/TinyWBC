@@ -2,3 +2,4 @@
 build
 compile_commands.json
 /project.org
+/examples/hyq/include/configure.h

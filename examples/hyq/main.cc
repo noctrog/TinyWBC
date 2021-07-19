@@ -1,3 +1,6 @@
+#include <boost/filesystem.hpp>
+#include <boost/dll.hpp>
+
 #include <dart/dart.hpp>
 #include <dart/dynamics/SmartPointer.hpp>
 #include <dart/dynamics/WeldJoint.hpp>
@@ -7,6 +10,8 @@
 #include <dart/utils/urdf/DartLoader.hpp>
 
 #include <HyqWorldNode.hpp>
+
+#include <configure.h>
 
 using namespace dart;
 
@@ -33,10 +38,19 @@ loadHyqRobot(void)
 {
   dart::utils::DartLoader loader;
 
+  // Retrieve the robot urdf path
+  std::string pkg_path, urdf_path;
+  if (boost::filesystem::exists(EXAMPLE_RESOURCE_DIR "/urdf/hyq.urdf"))
+    pkg_path = EXAMPLE_RESOURCE_DIR;
+  else if (boost::filesystem::exists(EXAMPLE_RESOURCE_INSTALL_DIR "/urdf/hyq.urdf"))
+    pkg_path = EXAMPLE_RESOURCE_INSTALL_DIR;
+  else
+    urdf_path = boost::dll::program_location().parent_path().string();
+  urdf_path = pkg_path + "/urdf/hyq.urdf";
+
   // Load robot from URDF
-  loader.addPackageDirectory("hyq_urdf", "/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf");
-  dynamics::SkeletonPtr robot
-    = loader.parseSkeleton("/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf/urdf/hyq.urdf");
+  loader.addPackageDirectory("hyq_urdf", pkg_path);
+  dynamics::SkeletonPtr robot = loader.parseSkeleton(urdf_path);
 
   robot->setName("hyq");
 

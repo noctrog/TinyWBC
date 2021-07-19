@@ -1,14 +1,27 @@
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/dll.hpp>
+
 #include <Controller.hpp>
+#include <boost/filesystem/directory.hpp>
 #include <dart/dynamics/SmartPointer.hpp>
 
 #include <tiny_wbc.hpp>
+
+#include <configure.h>
 
 //==============================================================================
 Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   : mRobot(_robot)
 {
-  // TODO: more elegant solution
-  const std::string urdf_path("/home/ramon/Documents/programming/tiny_wbc/examples/hyq/hyq_urdf/urdf/hyq.urdf");
+  // Load the robot model
+  std::string urdf_path;
+  if (boost::filesystem::exists(EXAMPLE_RESOURCE_DIR "/urdf/hyq.urdf"))
+    urdf_path = EXAMPLE_RESOURCE_DIR "/urdf/hyq.urdf";
+  else if (boost::filesystem::exists(EXAMPLE_RESOURCE_INSTALL_DIR "/urdf/hyq.urdf"))
+    urdf_path = EXAMPLE_RESOURCE_INSTALL_DIR "/urdf/hyq.urdf";
+  else
+    urdf_path = boost::dll::program_location().parent_path().string() + "/urdf/hyq.urdf";
 
   // Load the robot model to the whole body controller
   mWBC.reset(new TinyWBC(urdf_path));
