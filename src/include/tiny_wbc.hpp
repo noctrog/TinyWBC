@@ -50,6 +50,7 @@ public:
   typedef Eigen::Vector6d SpatialVel;
   typedef Eigen::VectorXd JointPos;
   typedef Eigen::VectorXd JointVel;
+  typedef Eigen::VectorXd JointAcc;
   typedef Eigen::Vector3d ComPos;
   typedef Eigen::Vector3d ComVel;
   typedef Eigen::Vector3d ComAcc;
@@ -60,7 +61,6 @@ public:
   // Robot feedback
   typedef Eigen::VectorXd PosErrors;
   typedef Eigen::VectorXd VelErrors;
-  typedef Eigen::VectorXd AccVector;
   // Contact names and jacobians
   typedef std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> ContactJacobians;
   // Robot representation
@@ -171,19 +171,11 @@ public:
    * posture is used to calculate the position error.
    */
   void SetDesiredPosture(const JointPos&);
-
-  /** 
-   * @brief Set the desired posture velocity (joint velocities).
-   *
-   * @ref SetRobotState must be called first, since the current
-   * posture velocity is used to calculate the velocity error.
-   */
-  void SetDesiredPostureVelocity(const JointVel&);
-
-  /** 
-   * @brief Sets the desired posture acceleration (joint accelerations).
-   */
-  void SetPostureReferenceAccelerations(const AccVector&);
+  void SetDesiredPosture(const JointPos&,
+			 const JointVel&);
+  void SetDesiredPosture(const JointPos&,
+			 const JointVel&,
+			 const JointAcc&);
 
   /**
    * Sets the reference for the CoM
@@ -403,7 +395,7 @@ private:
   WeightList task_weight_;
   PosErrors ep_;
   VelErrors ev_;
-  AccVector qrdd_;
+  JointAcc qrdd_;
 
   // The current contact jacobians
   ContactJacobians contact_jacobians_;

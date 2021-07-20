@@ -251,19 +251,49 @@ TinyWBC::EraseDesiredFrameOrientation(const std::string& frame_name)
 void
 TinyWBC::SetDesiredPosture(const JointPos& posture)
 {
+  if (posture.size() != model_->njoints - 2) {
+    std::runtime_error("The desired posture position vector dimension does not match with "
+		       "the number of joints!");
+  }
+
   ep_ = posture - q_.tail(model_->njoints - 2);
 }
 
 void
-TinyWBC::SetDesiredPostureVelocity(const JointVel& posture_v)
+TinyWBC::SetDesiredPosture(const JointPos& posture_pos,
+			   const JointVel& posture_vel)
 {
-  ev_ = posture_v - qd_.tail(model_->njoints - 2);
+  try {
+    SetDesiredPosture(posture_pos);
+  } catch (...) {
+    return;  // Do not set the velocity if the posture is not properly set
+  }
+
+  if (posture_vel.size() != model_->njoints - 2) {
+    std::runtime_error("The desired posture velocity vector dimension does not match with "
+		       "the number of joints!");
+  }
+
+  ev_ = posture_vel - qd_.tail(model_->njoints - 2);
 }
 
 void
-TinyWBC::SetPostureReferenceAccelerations(const AccVector& qrdd)
+TinyWBC::SetDesiredPosture(const JointPos& posture_pos,
+			   const JointVel& posture_vel,
+			   const JointAcc& posture_acc)
 {
-  qrdd_ = qrdd;
+  try {
+    SetDesiredPosture(posture_pos, posture_vel);
+  } catch (...) {
+    return; // Do not set the acceleration if the position or velocity are not properly set
+  }
+
+  if (posture_acc.size() != model_->njoints - 2) {
+    std::runtime_error("The desired posture acceleration vetor dimensios does not match with "
+		       "the number of joints!");
+  }
+
+  qrdd_ = posture_acc;
 }
 
 void

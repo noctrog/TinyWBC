@@ -93,9 +93,9 @@ Controller::update()
 		      {"lf_foot", "rf_foot", "lh_foot", "rh_foot"});
 
   // Send the desired state to the controller
-  mWBC->SetDesiredPosture(mInitialState.mPositions.tail(nJoints));
-  mWBC->SetDesiredPostureVelocity(Eigen::VectorXd::Constant(nJoints, 0.0));
-  mWBC->SetPostureReferenceAccelerations(Eigen::VectorXd::Constant(nJoints, 0.0));
+  mWBC->SetDesiredPosture(mInitialState.mPositions.tail(nJoints),
+			  Eigen::VectorXd::Constant(nJoints, 0.0),
+			  Eigen::VectorXd::Constant(nJoints, 0.0));
   mWBC->SetDesiredCoM(Eigen::Vector3d(0.0, 0.0, 0.4));
 
   // Build and solve problem
