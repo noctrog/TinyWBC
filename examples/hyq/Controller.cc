@@ -44,6 +44,9 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   mWBC->PushConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
   mWBC->PushConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
 
+  // Set the actuation limits
+  mWBC->SetActuationLimits(Eigen::VectorXd::Constant(12, 1000.0));
+
   // Set the friction coefficient
   mWBC->SetFrictionCoefficient(0.4);
 

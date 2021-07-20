@@ -51,6 +51,7 @@ public:
   typedef Eigen::VectorXd JointPos;
   typedef Eigen::VectorXd JointVel;
   typedef Eigen::VectorXd JointAcc;
+  typedef Eigen::VectorXd JointForce;
   typedef Eigen::Vector3d ComPos;
   typedef Eigen::Vector3d ComVel;
   typedef Eigen::Vector3d ComAcc;
@@ -137,6 +138,14 @@ public:
 		     const JointPos& q, const JointVel& qd,
 		     const ContactNameList& contact_names,
 		     const ContactOrientationList& contact_orientations = {});
+
+  /**
+   * @brief Sets the limits of all of the actuators.
+   *
+   * @param limits: vector of absolute maximum forces for each motor.
+   *
+   */
+  void SetActuationLimits(const JointForce&);
 
   /**
    * @brief Defines a contact family. The newly contact family

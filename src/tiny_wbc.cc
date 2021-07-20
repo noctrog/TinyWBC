@@ -43,9 +43,6 @@ TinyWBC::TinyWBC(const std::string& urdf_path)
   S_ << Eigen::MatrixXd::Zero(njoints, 6),
     Eigen::MatrixXd::Identity(njoints, njoints);
 
-  // TODO: Actuation limits
-  u_max_ = Eigen::VectorXd::Constant(njoints, 1000.0);
-
   q_ = Eigen::VectorXd::Constant(njoints + 7, 0.0);
   qd_ = Eigen::VectorXd::Constant(njoints + 6, 0.0);
 
@@ -158,6 +155,15 @@ TinyWBC::SetRobotState(const SpatialPos& base_pos, const SpatialVel& base_vel,
   const auto atpl = pinocchio::getFrameClassicalAcceleration(*model_, *data_, base_frame_id,
 							     pinocchio::ReferenceFrame::WORLD);
   base_link_wdot_ << atpl.angular(); // TODO: always returns 0
+}
+
+void
+TinyWBC::SetActuationLimits(const JointForce& limits)
+{
+  const int njoints = model_->njoints - 2;
+
+  if (limits.size() == njoints)
+    u_max_ = limits;
 }
 
 void
