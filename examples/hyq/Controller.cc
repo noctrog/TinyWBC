@@ -4,6 +4,7 @@
 
 #include <Controller.hpp>
 #include <boost/filesystem/directory.hpp>
+#include <chrono>
 #include <dart/dynamics/SmartPointer.hpp>
 
 #include <tiny_wbc.hpp>
@@ -26,17 +27,21 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   // Load the robot model to the whole body controller
   mWBC.reset(new TinyWBC(urdf_path));
 
+	// Set the default values, these will be changed on the first update
   // Activate the tasks
   mWBC->PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
-  // mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
+	mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
+	mWBC->PushTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
 
   // Set the tasks priorities
   mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_JOINT, 0.4);
-  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_COM,   0.6);
+  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_COM,   0.3);
+  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_ORIENTATION, 0.3);
 
   // Set the tasks dynamic properties
-  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_JOINT, 20000.0, 200.0);
-  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_COM,   30000.0, 300.0);
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_JOINT, 40000.0, 200.0);
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_COM,   20000.0, 200.0);
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_ORIENTATION, 3000.0, 50.0);
 
   // Enable all the constraints
   mWBC->PushConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
@@ -74,6 +79,23 @@ Controller::update()
 {
   const int nJoints = mRobot->getNumJoints() - 6;
 
+	// Activate the desired tasks
+	mWBC->ClearTasks();
+	if (mbPostureTask)     mWBC->PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
+	if (mbComTask)         mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
+	if (mbOrientationTask) mWBC->PushTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
+  // Update the tasks weights
+  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_JOINT, mPostureWeight);
+  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_COM, mComWeight);
+  mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_ORIENTATION, mOrientationWeight);
+	// Update the tasks dynamic constants
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_JOINT, mPostureConstant,
+			std::sqrt(mPostureConstant));
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_COM, mComConstant, 
+			std::sqrt(mComConstant));
+  mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_ORIENTATION, 
+			mOrientationConstant, std::sqrt(mOrientationConstant));
+	
   // Retrieve the robot state
   // TODO: Retrieve contacts
   const Eigen::Isometry3d robot_base_tf = mRobot->getRootBodyNode()->getTransform();
@@ -88,6 +110,11 @@ Controller::update()
   pin_spatial_pos << robot_spatial_pos.segment(3, 3), robot_base_quat.x(),
     robot_base_quat.y(), robot_base_quat.z(), robot_base_quat.w();
   pin_spatial_vel << robot_spatial_vel.segment(3, 3), robot_spatial_vel.head(3);
+
+  // Set the orientation objectives
+	mWBC->SetDesiredFrameOrientation("trunk",
+						 {0.0, std::sin(dart::common::Timer::getWallTime() / 2.0), 0.0},
+						 {0.0, std::cos(dart::common::Timer::getWallTime() / 2.0), 0.0});
 
   mWBC->SetRobotState(pin_spatial_pos,
 		      pin_spatial_vel,
@@ -124,4 +151,67 @@ void
 Controller::resetRobot()
 {
   mRobot->setConfiguration(mInitialState);
+}
+
+//==============================================================================
+void 
+Controller::setPostureTaskActive(bool active)
+{
+	mbPostureTask = active;
+}
+
+//==============================================================================
+void 
+Controller::setComTaskActive(bool active)
+{
+	mbComTask = active;
+}
+
+//==============================================================================
+void 
+Controller::setOrientationTaskActive(bool active)
+{
+	mbOrientationTask = active;
+}
+
+//==============================================================================
+void 
+Controller::setPostureTaskConstant(float value)
+{
+	mPostureConstant = value;
+}
+
+//==============================================================================
+void 
+Controller::setComTaskConstant(float value)
+{
+	mComConstant = value;
+}
+
+//==============================================================================
+void 
+Controller::setOrientationTaskConstant(float value)
+{
+	mOrientationConstant = value;
+}
+
+//==============================================================================
+void 
+Controller::setPostureTaskWeight(float value)
+{
+	mPostureWeight = value;
+}
+
+//==============================================================================
+void 
+Controller::setComTaskWeight(float value)
+{
+	mComWeight = value;
+}
+
+//==============================================================================
+void 
+Controller::setOrientationTaskWeight(float value)
+{
+	mOrientationWeight = value;
 }

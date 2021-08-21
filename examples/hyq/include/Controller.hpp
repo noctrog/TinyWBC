@@ -28,6 +28,16 @@ public:
   /// \brief Resets the robot
   void resetRobot(void);
 
+	void setPostureTaskActive(bool);
+	void setComTaskActive(bool);
+	void setOrientationTaskActive(bool);
+	void setPostureTaskConstant(float);
+	void setComTaskConstant(float);
+	void setOrientationTaskConstant(float);
+	void setPostureTaskWeight(float);
+	void setComTaskWeight(float);
+	void setOrientationTaskWeight(float);
+
 protected:
   /// \brief The robot skeleton
   dart::dynamics::SkeletonPtr mRobot;
@@ -38,6 +48,17 @@ private:
 
   /// \brief TinyWBC instance
   TinyWBCPtr mWBC; 
+
+	/// \brief Active tasks
+  bool mbPostureTask;
+	bool mbComTask;
+	bool mbOrientationTask;
+	float mPostureConstant;
+	float mComConstant;
+	float mOrientationConstant;
+	float mPostureWeight;
+	float mComWeight;
+	float mOrientationWeight;
 };
 
 #endif /* CONTROLLER_H */

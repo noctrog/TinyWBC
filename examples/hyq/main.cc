@@ -72,11 +72,15 @@ int main()
       = new HyqWorldNode(world, robot);
 
   // Create a Viewer and set it up with the WorldNode
-  auto viewer = gui::osg::Viewer();
+  auto viewer = gui::osg::ImGuiViewer();
   viewer.addWorldNode(node);
 
   viewer.addInstructionText("Press space to start free falling the box.\n");
   std::cout << viewer.getInstructions() << std::endl;
+
+	// Add control widget
+	viewer.getImGuiHandler()->addWidget(
+			std::make_shared<ControllerWidget>(&viewer, world, node->getController()));
 
   // Set up the window to be 640x480
   viewer.setUpViewInWindow(0, 0, 640, 480);
