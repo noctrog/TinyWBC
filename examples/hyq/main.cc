@@ -28,7 +28,7 @@ createFloor(void)
     dynamics::CollisionAspect,
     dynamics::DynamicsAspect>(floor_shape);
   Eigen::Isometry3d floor_tf(Eigen::Isometry3d::Identity());
-  floor_tf.translation().z() = -0.8;
+  floor_tf.translation().z() = -0.7;
   floor_body->getParentJoint()->setTransformFromParentBodyNode(floor_tf);
   return floor_skeleton;
 }
