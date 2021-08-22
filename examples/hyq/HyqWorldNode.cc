@@ -13,6 +13,12 @@ HyqWorldNode::HyqWorldNode(
   assert(world);
   assert(hyq);
 
+	// Add the desired center of mass ball visual to the world
+	desired_com_pos_ = Eigen::Vector3d(0.0, 0.0,
+			-0.1 + 0.05 * std::cos(dart::common::Timer::getWallTime()));
+	visual_desired_com_ = std::make_shared<VisualBall>(world, 0.05,
+			desired_com_pos_);
+
   mController.reset(new Controller(hyq));
 }
 
@@ -30,7 +36,11 @@ void HyqWorldNode::customPreStep()
   auto base = mController->getRobotSkeleton()->getBodyNode("trunk");
   base->addExtForce(mExternalForce);
 
-	// TODO: Update the controller tasks
+	// Update desired center of mass
+	desired_com_pos_ = Eigen::Vector3d(0.0, 0.0,
+			-0.1 + 0.05 * std::cos(dart::common::Timer::getWallTime()));
+	visual_desired_com_->setPosition(desired_com_pos_);
+	mController->setDesiredCom(desired_com_pos_);
 
   mController->update();
 }
@@ -262,4 +272,46 @@ ControllerWidget::setControllerState()
 	mController->setPostureTaskWeight(mPostureWeight);
 	mController->setComTaskWeight(mComWeight);
 	mController->setOrientationTaskWeight(mOrientationWeight);
+}
+
+//==============================================================================
+//============================== Visual Ball ===================================
+//==============================================================================
+VisualBall::VisualBall(dart::simulation::WorldPtr world, 
+		double radius, const Eigen::Vector3d& pos,
+		Eigen::Vector4d color)
+{
+	// Create skeleton
+	skel = dart::dynamics::Skeleton::create();
+	// Link skeleton with respect to the world and retrieve the ball body
+	const auto ball_and_world 
+		= skel->createJointAndBodyNodePair<dart::dynamics::WeldJoint>();
+	ball_body = ball_and_world.second;
+	// Set the sphere shape to the ball body
+	const auto ball_shape = std::make_shared<dart::dynamics::SphereShape>(radius);
+	ball_body->createShapeNodeWith<dart::dynamics::VisualAspect>(ball_shape);
+
+	// Set the ball position
+	setPosition(pos);
+
+	// Set the ball color
+	ball_body->getShapeNode(0)->getVisualAspect()->setColor(color);
+
+	// Add the skeleton to the world
+	world->addSkeleton(skel);
+}
+
+//==============================================================================
+VisualBall::~VisualBall()
+{
+
+}
+
+//==============================================================================
+void 
+VisualBall::setPosition(const Eigen::Vector3d& pos)
+{
+	Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+	tf.translation() = pos;
+	ball_body->getParentJoint()->setTransformFromParentBodyNode(tf);
 }

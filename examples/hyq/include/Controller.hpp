@@ -28,6 +28,9 @@ public:
   /// \brief Resets the robot
   void resetRobot(void);
 
+	/// \brief Set the desired center of mass
+	void setDesiredCom(const Eigen::Vector3d& com);
+	
 	void setPostureTaskActive(bool);
 	void setComTaskActive(bool);
 	void setOrientationTaskActive(bool);
@@ -48,6 +51,9 @@ private:
 
   /// \brief TinyWBC instance
   TinyWBCPtr mWBC; 
+
+	/// \brief The desired center of mass
+	Eigen::Vector3d desired_com_;
 
 	/// \brief Active tasks
   bool mbPostureTask;

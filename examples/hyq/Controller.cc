@@ -126,7 +126,7 @@ Controller::update()
   mWBC->SetDesiredPosture(mInitialState.mPositions.tail(nJoints),
 			  Eigen::VectorXd::Constant(nJoints, 0.0),
 			  Eigen::VectorXd::Constant(nJoints, 0.0));
-  mWBC->SetDesiredCoM(Eigen::Vector3d(0.0, 0.0, 0.4));
+  mWBC->SetDesiredCoM(desired_com_);
 
   // Build and solve problem
   mWBC->BuildProblem();
@@ -151,6 +151,13 @@ void
 Controller::resetRobot()
 {
   mRobot->setConfiguration(mInitialState);
+}
+
+//==============================================================================
+void
+Controller::setDesiredCom(const Eigen::Vector3d& com)
+{
+	desired_com_ = com;
 }
 
 //==============================================================================

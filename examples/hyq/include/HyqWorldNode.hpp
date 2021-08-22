@@ -8,6 +8,22 @@
 
 #include <Controller.hpp>
 
+class VisualBall {
+	public:
+		VisualBall(dart::simulation::WorldPtr world, 
+				double radius, const Eigen::Vector3d& pos,
+				Eigen::Vector4d color = Eigen::Vector4d(0.8, 0.1, 0.1, 1.0));
+		virtual ~VisualBall();
+
+		void setPosition(const Eigen::Vector3d& pos);
+
+	private:
+		dart::dynamics::SkeletonPtr skel;
+		dart::dynamics::BodyNodePtr ball_body;
+};
+
+using VisualBallPtr = std::shared_ptr<VisualBall>;
+
 class HyqWorldNode : public dart::gui::osg::RealTimeWorldNode
 {
 public:
@@ -35,6 +51,10 @@ protected:
   std::shared_ptr<Controller> mController;
   Eigen::Vector3d mExternalForce;
   int mForceDuration;
+
+private:
+	VisualBallPtr visual_desired_com_;
+	Eigen::Vector3d desired_com_pos_;
 };
 
 class ControllerWidget : public dart::gui::osg::ImGuiWidget
