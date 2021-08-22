@@ -52,6 +52,14 @@ loadHyqRobot(void)
   loader.addPackageDirectory("hyq_urdf", pkg_path);
   dynamics::SkeletonPtr robot = loader.parseSkeleton(urdf_path);
 
+	// Make the robot transparent
+	if (robot) {
+		for (const auto& node : robot->getBodyNodes())
+			for (const auto& shape : node->getShapeNodes())
+				if (shape->getVisualAspect())
+					shape->getVisualAspect()->setAlpha(0.7);
+	}
+
   robot->setName("hyq");
 
   return robot;
