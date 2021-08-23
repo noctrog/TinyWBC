@@ -30,6 +30,7 @@ createFloor(void)
   Eigen::Isometry3d floor_tf(Eigen::Isometry3d::Identity());
   floor_tf.translation().z() = -0.7;
   floor_body->getParentJoint()->setTransformFromParentBodyNode(floor_tf);
+	floor_body->getShapeNode(0)->getDynamicsAspect()->setFrictionCoeff(100.0);
   return floor_skeleton;
 }
 
@@ -52,12 +53,16 @@ loadHyqRobot(void)
   loader.addPackageDirectory("hyq_urdf", pkg_path);
   dynamics::SkeletonPtr robot = loader.parseSkeleton(urdf_path);
 
-	// Make the robot transparent
+	// Make the robot transparent and set the robot friction
+	const float friction_coef = 100.0;
 	if (robot) {
 		for (const auto& node : robot->getBodyNodes())
-			for (const auto& shape : node->getShapeNodes())
-				if (shape->getVisualAspect())
+			for (const auto& shape : node->getShapeNodes()) {
+				if (shape->getVisualAspect())  // Set the transparency
 					shape->getVisualAspect()->setAlpha(0.7);
+				if (shape->getDynamicsAspect())  // Set the robot friction
+					shape->getDynamicsAspect()->setFrictionCoeff(friction_coef);
+			}
 	}
 
   robot->setName("hyq");
