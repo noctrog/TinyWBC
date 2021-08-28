@@ -22,7 +22,6 @@ public:
   enum class TaskName {
     FOLLOW_JOINT = 0,
     FOLLOW_COM,
-    FOLLOW_BASE_ORIENTATION,
     FOLLOW_ORIENTATION,
     TOTAL_TASKS
   };
@@ -55,8 +54,6 @@ public:
   typedef Eigen::Vector3d ComPos;
   typedef Eigen::Vector3d ComVel;
   typedef Eigen::Vector3d ComAcc;
-  typedef Eigen::VectorXd BaseRot;
-  typedef Eigen::Vector3d BaseAngVel;
   typedef Eigen::Vector3d FrameRot;
   typedef Eigen::Vector3d FrameAngVel;
   // Robot feedback
@@ -193,11 +190,6 @@ public:
   void SetDesiredCoM(const ComPos& com_pos, const ComVel& com_vel);
   void SetDesiredCoM(const ComPos& com_pos, const ComVel& com_vel,
 		     const ComAcc& com_acc);
-
-  /**
-   * @brief Sets the desired base_link orientation.
-   */
-  void SetDesiredBaseOrientation(const BaseRot& base_rot, const BaseAngVel& base_ang_vel);
 
   /**
    * @brief Sets the desired orientation for @ref frame_name.
@@ -414,10 +406,6 @@ private:
   // Frame orientation task
   DesiredOrientations desired_orientations_;
 
-  // Base link jacobian
-  Eigen::MatrixXd base_link_jacobian_;
-  Eigen::Vector3d base_link_wdot_; // angular acceleration
-
   // Selection matrix;
   Eigen::MatrixXd S_;
 
@@ -430,8 +418,6 @@ private:
   // Desired CoM pos and vel
   Eigen::Vector3d des_com_pos_, des_com_vel_, des_com_acc_;
   bool b_com_vel_specified_, b_com_acc_specified_;
-  // Desired base rotation and angular velocity
-  Eigen::Vector3d des_base_rot_, des_base_ang_vel_;
 
   // Joint actuator limits
   Eigen::VectorXd u_max_;
