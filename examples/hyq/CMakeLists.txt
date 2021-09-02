@@ -6,8 +6,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/configure.h.cmake
 
 include_directories(include)
 
-file(GLOB srcs CONFIGURE_DEPENDS *.cc)
-add_executable(hyq_demo ${srcs})
+add_executable(hyq_demo Controller.cc HyqWorldNode.cc main.cc)
 target_link_libraries(hyq_demo PUBLIC ${dart_required_libraries} ${PROJECT_NAME})
 
 install(FILES
