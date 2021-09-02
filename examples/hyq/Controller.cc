@@ -27,11 +27,11 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   // Load the robot model to the whole body controller
   mWBC.reset(new TinyWBC(urdf_path));
 
-	// Set the default values, these will be changed on the first update
+  // Set the default values, these will be changed on the first update
   // Activate the tasks
-  mWBC->PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
-	mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
-	mWBC->PushTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
+  mWBC->SetTask(TinyWBC::TaskName::FOLLOW_JOINT);
+  mWBC->SetTask(TinyWBC::TaskName::FOLLOW_COM);
+  mWBC->SetTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
 
   // Set the tasks priorities
   mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_JOINT, 0.4);
@@ -79,11 +79,11 @@ Controller::update()
 {
   const int nJoints = mRobot->getNumJoints() - 6;
 
-	// Activate the desired tasks
-	mWBC->ClearTasks();
-	if (mbPostureTask)     mWBC->PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
-	if (mbComTask)         mWBC->PushTask(TinyWBC::TaskName::FOLLOW_COM);
-	if (mbOrientationTask) mWBC->PushTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
+  // Activate the desired tasks
+  mWBC->ClearTasks();
+  if (mbPostureTask)     mWBC->SetTask(TinyWBC::TaskName::FOLLOW_JOINT);
+  if (mbComTask)         mWBC->SetTask(TinyWBC::TaskName::FOLLOW_COM);
+  if (mbOrientationTask) mWBC->SetTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
   // Update the tasks weights
   mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_JOINT, mPostureWeight);
   mWBC->SetTaskWeight(TinyWBC::TaskName::FOLLOW_COM, mComWeight);

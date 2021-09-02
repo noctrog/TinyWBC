@@ -46,15 +46,20 @@ wbc.PushConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
 ### Activate each task
 
 ```cpp
-wbc.PushTask(TinyWBC::TaskName::FOLLOW_JOINT);
-wbc.PushTask(TinyWBC::TaskName::FOLLOW_COM);
-wbc.PushTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
+wbc.SetTask(TinyWBC::TaskName::FOLLOW_JOINT);
+wbc.SetTask(TinyWBC::TaskName::FOLLOW_COM);
+wbc.SetTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
 ```
 
-### Deactivate tasks
+### Deactivate a task
 
-For the moment, if you want to deactivate a single task, you will have to clear
-all the tasks and activate all the rest.
+```cpp
+wbc.EraseTask(TinyWBC::TaskName::FOLLOW_JOINT);
+wbc.EraseTask(TinyWBC::TaskName::FOLLOW_COM);
+wbc.EraseTask(TinyWBC::TaskName::FOLLOW_ORIENTATION);
+```
+
+### Deactivate all tasks
 
 ```cpp
 wbc.ClearTasks();

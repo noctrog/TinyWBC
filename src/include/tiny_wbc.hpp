@@ -3,6 +3,7 @@
 
 #include <dart/math/MathTypes.hpp>
 #include <vector>
+#include <set>
 #include <array>
 #include <memory>
 
@@ -38,7 +39,7 @@ public:
   typedef double Weight;
   typedef std::array<Weight, static_cast<size_t>(TaskName::TOTAL_TASKS)> WeightList;
   // Tasks and constraints
-  typedef std::vector<TaskName> TaskList;
+  typedef std::set<TaskName> TaskList;
   struct TaskDynamics {
     double Kp, Kv;
   };
@@ -271,12 +272,17 @@ public:
   /**
    * @brief Inserts a task.
    */
-  void PushTask(const TaskName task);
+  void SetTask(const TaskName task);
 
   /**
    * @brief Insert a task and update its dynamics parameters.
    */
-  void PushTask(const TaskName task, const double Kp, const double Kv);
+  void SetTask(const TaskName task, const double Kp, const double Kv);
+  
+  /**
+   * @brief Erase an active task
+   */
+  void EraseTask(const TaskName task);
 
   /**
    * @brief Inserts a constraint.

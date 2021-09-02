@@ -676,20 +676,22 @@ TinyWBC::ClearConstraints(void)
 }
 
 void
-TinyWBC::PushTask(const TaskName task)
+TinyWBC::SetTask(const TaskName task)
 {
-  // Insert the task if it is not currently present
-  if (std::find(std::begin(active_tasks_), std::end(active_tasks_), task)
-      == active_tasks_.end()) {
-    active_tasks_.push_back(task);
-  }
+  active_tasks_.insert(task);
 }
 
 void
-TinyWBC::PushTask(const TaskName task, const double Kp, const double Kv)
+TinyWBC::EraseTask(const TaskName task)
+{
+  active_tasks_.erase(task);
+}
+
+void
+TinyWBC::SetTask(const TaskName task, const double Kp, const double Kv)
 {
   // Insert task
-  PushTask(task);
+  SetTask(task);
   // Update dynamic parameters
   SetTaskDynamics(task, Kp, Kv);
 }
