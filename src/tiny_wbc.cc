@@ -697,13 +697,15 @@ TinyWBC::SetTask(const TaskName task, const double Kp, const double Kv)
 }
 
 void
-TinyWBC::PushConstraint(const ConstraintName constraint)
+TinyWBC::SetConstraint(const ConstraintName constraint)
 {
-  // Insert constraint if it is not currently present
-  if (std::find(std::begin(active_constraints_), std::end(active_constraints_), constraint)
-      == active_constraints_.end()) {
-    active_constraints_.push_back(constraint);
-  }
+  active_constraints_.insert(constraint);
+}
+
+void 
+TinyWBC::EraseConstraint(const ConstraintName constraint)
+{
+  active_constraints_.erase(constraint);
 }
 
 int

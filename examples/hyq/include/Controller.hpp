@@ -31,6 +31,10 @@ public:
 	/// \brief Set the desired center of mass
 	void setDesiredCom(const Eigen::Vector3d& com);
 	
+  void setEquationOfMotionConstraint(bool);
+  void setFixedContactConditionConstraint(bool);
+  void setActuationLimitsConstraint(bool);
+  void setContactStabilityConstraint(bool);
 	void setPostureTaskActive(bool);
 	void setComTaskActive(bool);
 	void setOrientationTaskActive(bool);
@@ -55,6 +59,9 @@ private:
 	/// \brief The desired center of mass
 	Eigen::Vector3d desired_com_;
 
+  /// \brief Active constraints
+  bool mbEquationOfMotion, mbFixedContactCondition,
+       mbActuationLimits, mbContactStability;
 	/// \brief Active tasks
   bool mbPostureTask;
 	bool mbComTask;

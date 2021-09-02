@@ -34,11 +34,28 @@ TinyWBC wbc(urdf_path);
 
 ## Constraints
 
+### Activate constraints
+
 ```cpp
-wbc.PushConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
-wbc.PushConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
-wbc.PushConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
-wbc.PushConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
+wbc.SetConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
+wbc.SetConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
+wbc.SetConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
+wbc.SetConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
+```
+
+### Deactivate constraints
+
+```cpp
+wbc.EraseConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
+wbc.EraseConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
+wbc.EraseConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
+wbc.EraseConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
+```
+
+### Deactivate all constraints
+
+```cpp
+wbc.ClearConstraints();
 ```
 
 ## Tasks

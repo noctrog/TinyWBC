@@ -112,6 +112,10 @@ ControllerWidget::ControllerWidget(
 	mGuiGravity(true),
 	mGuiHeadlights(true),
 	mGravity(true),
+  mbEquationOfMotion(true),
+  mbFixedContactCondition(true),
+  mbContactStability(true),
+  mbActuationLimits(true),
 	mbPostureTask(true),
 	mbComTask(false),
 	mbOrientationTask(false),
@@ -160,9 +164,6 @@ ControllerWidget::render()
 		ImGui::EndMainMenuBar();
 	}
 
-	ImGui::Text("An empty OSG example with ImGui");
-	ImGui::Spacing();
-
 	if (ImGui::CollapsingHeader("Simulation"))
 	{
 		int e = mViewer->isSimulating() ? 0 : 1;
@@ -180,6 +181,12 @@ ControllerWidget::render()
 
 	// Control the controller's parameters
 	if (ImGui::CollapsingHeader("Controller", ImGuiTreeNodeFlags_DefaultOpen)) {
+    // Enable or disable constraints
+    ImGui::Text("Constraints");
+    ImGui::Checkbox("Equation of motion", &mbEquationOfMotion);
+    ImGui::Checkbox("Fixed contact condition", &mbFixedContactCondition);
+    ImGui::Checkbox("Actuation limits", &mbActuationLimits);
+    ImGui::Checkbox("Contact stability", &mbContactStability);
 		// Enable or disable tasks
 		ImGui::Text("Tasks");
 		ImGui::Checkbox("Posture task", &mbPostureTask);
@@ -261,6 +268,11 @@ ControllerWidget::setGravity(bool gravity)
 void
 ControllerWidget::setControllerState()
 {
+  mController->setEquationOfMotionConstraint(mbEquationOfMotion);
+  mController->setFixedContactConditionConstraint(mbFixedContactCondition);
+  mController->setActuationLimitsConstraint(mbActuationLimits);
+  mController->setContactStabilityConstraint(mbContactStability);
+
 	mController->setPostureTaskActive(mbPostureTask);
 	mController->setComTaskActive(mbComTask);
 	mController->setOrientationTaskActive(mbOrientationTask);

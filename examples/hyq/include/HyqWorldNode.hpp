@@ -80,9 +80,10 @@ class ControllerWidget : public dart::gui::osg::ImGuiWidget
 		// Controller
 		std::shared_ptr<Controller> mController;
 		// Controller Tasks
-		bool mbPostureTask;
-		bool mbComTask;
-		bool mbOrientationTask;
+    bool mbEquationOfMotion, mbFixedContactCondition,
+         mbActuationLimits, mbContactStability;
+		bool mbPostureTask, mbComTask, 
+         mbOrientationTask;
 		float mPostureConstant;
 		float mComConstant;
 		float mOrientationConstant;

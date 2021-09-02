@@ -44,10 +44,10 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   mWBC->SetTaskDynamics(TinyWBC::TaskName::FOLLOW_ORIENTATION, 3000.0, 50.0);
 
   // Enable all the constraints
-  mWBC->PushConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
-  mWBC->PushConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
-  mWBC->PushConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
-  mWBC->PushConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
+  mWBC->SetConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
+  mWBC->SetConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
+  mWBC->SetConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
+  mWBC->SetConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
 
   // Set the actuation limits
   mWBC->SetActuationLimits(Eigen::VectorXd::Constant(12, 1000.0));
@@ -78,6 +78,17 @@ void
 Controller::update()
 {
   const int nJoints = mRobot->getNumJoints() - 6;
+
+  // Activate the desired constraints
+  mWBC->ClearConstraints();
+  if (mbEquationOfMotion)
+    mWBC->SetConstraint(TinyWBC::ConstraintName::EQUATION_OF_MOTION);
+  if (mbFixedContactCondition)
+    mWBC->SetConstraint(TinyWBC::ConstraintName::FIXED_CONTACT_CONDITION);
+  if (mbActuationLimits)
+    mWBC->SetConstraint(TinyWBC::ConstraintName::ACTUATION_LIMITS);
+  if (mbContactStability)
+    mWBC->SetConstraint(TinyWBC::ConstraintName::CONTACT_STABILITY);
 
   // Activate the desired tasks
   mWBC->ClearTasks();
@@ -158,6 +169,34 @@ void
 Controller::setDesiredCom(const Eigen::Vector3d& com)
 {
 	desired_com_ = com;
+}
+
+//==============================================================================
+void 
+Controller::setEquationOfMotionConstraint(bool active)
+{
+  mbEquationOfMotion = active;
+}
+
+//==============================================================================
+void 
+Controller::setFixedContactConditionConstraint(bool active)
+{
+  mbFixedContactCondition = active;
+}
+
+//==============================================================================
+void 
+Controller::setActuationLimitsConstraint(bool active)
+{
+  mbActuationLimits = active;
+}
+
+//==============================================================================
+void 
+Controller::setContactStabilityConstraint(bool active)
+{
+  mbContactStability = active;
 }
 
 //==============================================================================

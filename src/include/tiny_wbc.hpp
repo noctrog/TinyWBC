@@ -44,7 +44,7 @@ public:
     double Kp, Kv;
   };
   typedef std::array<TaskDynamics, static_cast<size_t>(TaskName::TOTAL_TASKS)> TaskDynamicsList;
-  typedef std::vector<ConstraintName> ConstraintList;
+  typedef std::set<ConstraintName> ConstraintList;
   // Robot state
   typedef Eigen::VectorXd SpatialPos;
   typedef Eigen::Vector6d SpatialVel;
@@ -287,7 +287,12 @@ public:
   /**
    * @brief Inserts a constraint.
    */
-  void PushConstraint(const ConstraintName constraint);
+  void SetConstraint(const ConstraintName constraint);
+
+  /**
+   * @brief Deactivates a single constraint
+   */
+  void EraseConstraint(const ConstraintName constraint);
 
   /**
    * @brief Returns the number of variables for the current formulation.
