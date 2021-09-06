@@ -3,7 +3,6 @@
 #include <boost/dll.hpp>
 
 #include <Controller.hpp>
-#include <boost/filesystem/directory.hpp>
 #include <chrono>
 #include <dart/dynamics/SmartPointer.hpp>
 
@@ -53,7 +52,7 @@ Controller::Controller(dart::dynamics::SkeletonPtr _robot)
   mWBC->SetActuationLimits(Eigen::VectorXd::Constant(12, 1000.0));
 
   // Set the friction coefficient
-  mWBC->SetFrictionCoefficient(0.4);
+  mWBC->SetFrictionCoefficient(1.0);
 
   // Initialize and save the robot initial state
   mInitialState = mRobot->getConfiguration(dart::dynamics::Skeleton::CONFIG_POSITIONS |
