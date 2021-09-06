@@ -55,6 +55,9 @@ class HyqWorldNode : public dart::gui::osg::RealTimeWorldNode
   private:
     VisualBallPtr visual_desired_com_;
     Eigen::Vector3d desired_com_pos_;
+
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 class ControllerWidget : public dart::gui::osg::ImGuiWidget

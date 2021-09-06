@@ -441,6 +441,9 @@ class TinyWBC
 
     // Contact families
     ContactFamilyList contact_families_;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 #endif /* TINY_WBC_H */

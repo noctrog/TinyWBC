@@ -72,6 +72,9 @@ private:
   float mPostureWeight;
   float mComWeight;
   float mOrientationWeight;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 #endif /* CONTROLLER_H */
