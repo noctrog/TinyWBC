@@ -30,7 +30,7 @@ createFloor(void)
   Eigen::Isometry3d floor_tf(Eigen::Isometry3d::Identity());
   floor_tf.translation().z() = -0.7;
   floor_body->getParentJoint()->setTransformFromParentBodyNode(floor_tf);
-	floor_body->getShapeNode(0)->getDynamicsAspect()->setFrictionCoeff(100.0);
+  floor_body->getShapeNode(0)->getDynamicsAspect()->setFrictionCoeff(100.0);
   return floor_skeleton;
 }
 
@@ -53,17 +53,17 @@ loadHyqRobot(void)
   loader.addPackageDirectory("hyq_urdf", pkg_path);
   dynamics::SkeletonPtr robot = loader.parseSkeleton(urdf_path);
 
-	// Make the robot transparent and set the robot friction
-	const float friction_coef = 100.0;
-	if (robot) {
-		for (const auto& node : robot->getBodyNodes())
-			for (const auto& shape : node->getShapeNodes()) {
-				if (shape->getVisualAspect())  // Set the transparency
-					shape->getVisualAspect()->setAlpha(0.7);
-				if (shape->getDynamicsAspect())  // Set the robot friction
-					shape->getDynamicsAspect()->setFrictionCoeff(friction_coef);
-			}
-	}
+  // Make the robot transparent and set the robot friction
+  const float friction_coef = 100.0;
+  if (robot) {
+    for (const auto& node : robot->getBodyNodes())
+      for (const auto& shape : node->getShapeNodes()) {
+        if (shape->hasVisualAspect())  // Set the transparency
+          shape->getVisualAspect()->setAlpha(0.7);
+        if (shape->hasDynamicsAspect())  // Set the robot friction
+          shape->getDynamicsAspect()->setFrictionCoeff(friction_coef);
+      }
+  }
 
   robot->setName("hyq");
 
@@ -82,7 +82,7 @@ int main()
 
   // Wrap a WorldNode around it
   ::osg::ref_ptr<HyqWorldNode> node
-      = new HyqWorldNode(world, robot);
+    = new HyqWorldNode(world, robot);
 
   // Create a Viewer and set it up with the WorldNode
   auto viewer = gui::osg::ImGuiViewer();
@@ -91,9 +91,9 @@ int main()
   viewer.addInstructionText("Press space to start free falling the box.\n");
   std::cout << viewer.getInstructions() << std::endl;
 
-	// Add control widget
-	viewer.getImGuiHandler()->addWidget(
-			std::make_shared<ControllerWidget>(&viewer, world, node->getController()));
+  // Add control widget
+  viewer.getImGuiHandler()->addWidget(
+      std::make_shared<ControllerWidget>(&viewer, world, node->getController()));
 
   // Set up the window to be 640x480
   viewer.setUpViewInWindow(0, 0, 640, 480);

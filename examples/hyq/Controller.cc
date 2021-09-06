@@ -122,11 +122,6 @@ Controller::update()
     robot_base_quat.y(), robot_base_quat.z(), robot_base_quat.w();
   pin_spatial_vel << robot_spatial_vel.segment(3, 3), robot_spatial_vel.head(3);
 
-  // Set the orientation objectives
-	mWBC->SetDesiredFrameOrientation("trunk",
-						 {0.0, std::sin(dart::common::Timer::getWallTime() / 2.0), 0.0},
-						 {0.0, std::cos(dart::common::Timer::getWallTime() / 2.0), 0.0});
-
   mWBC->SetRobotState(pin_spatial_pos,
 		      pin_spatial_vel,
 		      robot_spatial_pos.tail(nJoints),
@@ -137,7 +132,14 @@ Controller::update()
   mWBC->SetDesiredPosture(mInitialState.mPositions.tail(nJoints),
 			  Eigen::VectorXd::Constant(nJoints, 0.0),
 			  Eigen::VectorXd::Constant(nJoints, 0.0));
+	
+  // Set the desired center of mass position
   mWBC->SetDesiredCoM(desired_com_);
+
+  // Set the orientation objectives
+  mWBC->SetDesiredFrameOrientation("trunk",
+      {0.0, std::sin(dart::common::Timer::getWallTime() / 2.0), 0.0},
+      {0.0, std::cos(dart::common::Timer::getWallTime() / 2.0), 0.0});
 
   // Build and solve problem
   mWBC->BuildProblem();
@@ -168,7 +170,7 @@ Controller::resetRobot()
 void
 Controller::setDesiredCom(const Eigen::Vector3d& com)
 {
-	desired_com_ = com;
+  desired_com_ = com;
 }
 
 //==============================================================================
@@ -203,61 +205,61 @@ Controller::setContactStabilityConstraint(bool active)
 void 
 Controller::setPostureTaskActive(bool active)
 {
-	mbPostureTask = active;
+  mbPostureTask = active;
 }
 
 //==============================================================================
 void 
 Controller::setComTaskActive(bool active)
 {
-	mbComTask = active;
+  mbComTask = active;
 }
 
 //==============================================================================
 void 
 Controller::setOrientationTaskActive(bool active)
 {
-	mbOrientationTask = active;
+  mbOrientationTask = active;
 }
 
 //==============================================================================
 void 
 Controller::setPostureTaskConstant(float value)
 {
-	mPostureConstant = value;
+  mPostureConstant = value;
 }
 
 //==============================================================================
 void 
 Controller::setComTaskConstant(float value)
 {
-	mComConstant = value;
+  mComConstant = value;
 }
 
 //==============================================================================
 void 
 Controller::setOrientationTaskConstant(float value)
 {
-	mOrientationConstant = value;
+  mOrientationConstant = value;
 }
 
 //==============================================================================
 void 
 Controller::setPostureTaskWeight(float value)
 {
-	mPostureWeight = value;
+  mPostureWeight = value;
 }
 
 //==============================================================================
 void 
 Controller::setComTaskWeight(float value)
 {
-	mComWeight = value;
+  mComWeight = value;
 }
 
 //==============================================================================
 void 
 Controller::setOrientationTaskWeight(float value)
 {
-	mOrientationWeight = value;
+  mOrientationWeight = value;
 }
