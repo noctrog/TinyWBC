@@ -42,6 +42,10 @@ void HyqWorldNode::customPreStep()
   visual_desired_com_->setPosition(desired_com_pos_);
   mController->setDesiredCom(desired_com_pos_);
 
+  // Update desired base frame rotation
+  desired_com_pos_ = Eigen::Vector3d(0.0, 0.0, std::cos(dart::common::Timer::getWallTime()));
+  mController->setDesiredBaseRot(desired_com_pos_, {0.0, 0.0, 0.0});
+
   // TODO: Get the robot's feet collisions with the floor
   auto collision_engine =
     mWorld->getConstraintSolver()->getCollisionDetector();

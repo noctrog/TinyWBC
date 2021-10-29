@@ -405,23 +405,37 @@ TinyWBC::UpdateGradientMatrix(void)
                                                  J);
                                              J = J.block(3, 0, 3, model_->nv);
 
-                                             // Compute the current gradient vector
-                                             // TODO this is ugly
-                                             const auto& desired_rot = p.second.orientation;
+                                             //// Compute the gradient vector
+                                             // Get the angular velocity error
                                              const auto& desired_angvel = p.second.angular_vel;
-                                             Eigen::Matrix3d R = data_->oMf[id].rotation();
-                                             const Eigen::Matrix3d dR = Eigen::AngleAxisd(desired_rot(0), Eigen::Vector3d::UnitX()) *
-                                               Eigen::AngleAxisd(desired_rot(1), Eigen::Vector3d::UnitY()) *
-                                               Eigen::AngleAxisd(desired_rot(2), Eigen::Vector3d::UnitZ()) * R.transpose();
-                                             const Eigen::Vector3d ep = 0.5 * Eigen::Vector3d {dR(0, 1) - dR(1, 2),
-                                               dR(0, 2) - dR(2, 0),
-                                               dR(1, 0) - dR(2, 1)};
                                              const auto veltlp = pinocchio::getFrameVelocity(*model_, *data_,
                                                  id, pinocchio::ReferenceFrame::WORLD);
                                              const Eigen::Vector3d current_angvel(veltlp.angular().x(),
                                                  veltlp.angular().y(),
                                                  veltlp.angular().z());
                                              const Eigen::Vector3d ev = desired_angvel - current_angvel;
+                                             // Get the rotation error. The path followed to rotate the frame 
+                                             // of reference to the desired rotation depends on the parametrization
+                                             // used. But intituively, we would like to follow the path of minimum 
+                                             // rotation. That path is expresed by the angle-vector that rotates the 
+                                             // current frame to the desired frame around a single axis.
+                                             Eigen::Matrix3d R_c = data_->oMf[id].rotation(); // Current rotation
+                                             // Get the desired rotation (Euler XYZ (given) to rotation matrix)
+                                             const auto& desired_rot = p.second.orientation;
+                                             const Eigen::Matrix3d R_d = (Eigen::AngleAxisd(desired_rot(0), Eigen::Vector3d::UnitX()) *
+                                               Eigen::AngleAxisd(desired_rot(1), Eigen::Vector3d::UnitY()) *
+                                               Eigen::AngleAxisd(desired_rot(2), Eigen::Vector3d::UnitZ())).toRotationMatrix();
+                                             // Get the transformation required
+                                             const Eigen::Matrix3d R_rot = R_c.transpose() * R_d;
+                                             // Get the rotation angle
+                                             const double theta = std::acos((R_rot.trace() - 1.0) * 0.5);
+                                             // Get the rotation axis, if possible
+                                             const Eigen::Vector3d ep = (0.0 == theta) ? Eigen::Vector3d{0.0, 0.0, 0.0} : 
+                                               Eigen::Vector3d{R_rot(2, 1) - R_rot(1, 2),
+                                                               R_rot(0, 2) - R_rot(2, 0),
+                                                               R_rot(1, 0) - R_rot(0, 1)} / 2 / theta;
+                                             std::cout << "ep: " << ep.transpose() << std::endl;
+                                             //// Compute the gradient vector
                                              GetTaskDynamics(task, Kp, Kv);
                                              const Eigen::VectorXd q_aux = -(/*-dJqd*/ + Kp * ep + Kv * ep).transpose() * J;
 

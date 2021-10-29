@@ -30,6 +30,10 @@ public:
 
   /// \brief Set the desired center of mass
   void setDesiredCom(const Eigen::Vector3d& com);
+
+  /// \brief Set the desired base frame rot and rotvel
+  void setDesiredBaseRot(const Eigen::Vector3d& euler_xyz,
+                         const Eigen::Vector3d& rotvel);
 	
   void setEquationOfMotionConstraint(bool);
   void setFixedContactConditionConstraint(bool);
@@ -58,6 +62,11 @@ private:
 
   /// \brief The desired center of mass
   Eigen::Vector3d desired_com_;
+
+  /// \brief The desired base frame orientation
+  Eigen::Vector3d desired_base_rot_euler_xyz_;
+  /// \brief The desired frame rot velocity
+  Eigen::Vector3d desired_base_rotvel_;
 
   /// \brief Active constraints
   bool mbEquationOfMotion, mbFixedContactCondition,

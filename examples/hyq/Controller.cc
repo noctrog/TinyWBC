@@ -137,8 +137,8 @@ Controller::update()
 
   // Set the orientation objectives
   mWBC->SetDesiredFrameOrientation("trunk",
-      {0.0, std::sin(dart::common::Timer::getWallTime() / 2.0), 0.0},
-      {0.0, std::cos(dart::common::Timer::getWallTime() / 2.0), 0.0});
+      desired_base_rot_euler_xyz_,
+      {0.0, 0.0, 0.0});
 
   // Build and solve problem
   mWBC->BuildProblem();
@@ -170,6 +170,14 @@ void
 Controller::setDesiredCom(const Eigen::Vector3d& com)
 {
   desired_com_ = com;
+}
+
+void
+Controller::setDesiredBaseRot(const Eigen::Vector3d& euler_xyz,
+                              const Eigen::Vector3d& rotvel)
+{
+  desired_base_rot_euler_xyz_ = euler_xyz;
+  desired_base_rotvel_ = rotvel;
 }
 
 //==============================================================================
