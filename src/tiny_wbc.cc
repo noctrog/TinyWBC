@@ -317,42 +317,45 @@ TinyWBC::UpdateHessianMatrix(void)
 
   for (const auto task : active_tasks_) {
     switch (task) {
-      case TaskName::FOLLOW_JOINT: {
-                                     // The joint task cost is proportional to the identity matrix
-                                     typedef Eigen::Triplet<double> T;
-                                     std::vector<T> triplet_v;
-                                     triplet_v.reserve(model_->njoints - 2);
-                                     for (size_t i = 0; i < model_->njoints - 2; ++i)
-                                       triplet_v.emplace_back(i+6, i+6, 1.0);
-                                     Eigen::SparseMatrix<double> P_joint_task(cols, cols);
-                                     P_joint_task.setFromTriplets(triplet_v.begin(), triplet_v.end());
-                                     P_ += P_joint_task * GetTaskWeight(task);
-                                     break;
-                                   }
-      case TaskName::FOLLOW_COM: {
-                                   Eigen::SparseMatrix<double> P_com_task(cols, cols);
-                                   const auto& Jcom = data_->Jcom;
-                                   insert_in_sparse(P_com_task, Jcom.transpose() * Jcom, 0, 0);
-                                   P_ += P_com_task * GetTaskWeight(task);
-                                   break;
-                                 }
-      case TaskName::FOLLOW_ORIENTATION: {
-                                           Eigen::SparseMatrix<double> P_orientation_task(cols, cols);
-                                           Eigen::MatrixXd JtJ_sum(model_->nv, model_->nv);
-                                           JtJ_sum.setZero();
-                                           for (const auto& p : desired_orientations_) {
-                                             // Compute frame jacobian
-                                             const int id = p.first;
-                                             Eigen::MatrixXd J(6, model_->nv); J.setZero();
-                                             pinocchio::computeFrameJacobian(*model_, *data_, q_, id,
-                                                 pinocchio::ReferenceFrame::WORLD,
-                                                 J);
-                                             JtJ_sum += J.transpose() * J;
-                                           }
+      case TaskName::FOLLOW_JOINT: 
+        {
+          // The joint task cost is proportional to the identity matrix
+          typedef Eigen::Triplet<double> T;
+          std::vector<T> triplet_v;
+          triplet_v.reserve(model_->njoints - 2);
+          for (size_t i = 0; i < model_->njoints - 2; ++i)
+            triplet_v.emplace_back(i+6, i+6, 1.0);
+          Eigen::SparseMatrix<double> P_joint_task(cols, cols);
+          P_joint_task.setFromTriplets(triplet_v.begin(), triplet_v.end());
+          P_ += P_joint_task * GetTaskWeight(task);
+          break;
+        }
+      case TaskName::FOLLOW_COM: 
+        {
+          Eigen::SparseMatrix<double> P_com_task(cols, cols);
+          const auto& Jcom = data_->Jcom;
+          insert_in_sparse(P_com_task, Jcom.transpose() * Jcom, 0, 0);
+          P_ += P_com_task * GetTaskWeight(task);
+          break;
+        }
+      case TaskName::FOLLOW_ORIENTATION: 
+        {
+          Eigen::SparseMatrix<double> P_orientation_task(cols, cols);
+          Eigen::MatrixXd JtJ_sum(model_->nv, model_->nv);
+          JtJ_sum.setZero();
+          for (const auto& p : desired_orientations_) {
+            // Compute frame jacobian
+            const int id = p.first;
+            Eigen::MatrixXd J(6, model_->nv); J.setZero();
+            pinocchio::computeFrameJacobian(*model_, *data_, q_, id,
+                pinocchio::ReferenceFrame::WORLD,
+                J);
+            JtJ_sum += J.transpose() * J;
+          }
 
-                                           insert_in_sparse(P_orientation_task, JtJ_sum, 0, 0);
-                                           P_ += P_orientation_task * GetTaskWeight(task);
-                                         }
+          insert_in_sparse(P_orientation_task, JtJ_sum, 0, 0);
+          P_ += P_orientation_task * GetTaskWeight(task);
+        }
       default:
                                          std::runtime_error("Task hessian matrix not implemented!");
     }
@@ -372,81 +375,84 @@ TinyWBC::UpdateGradientMatrix(void)
 
   for (const auto task : active_tasks_) {
     switch (task) {
-      case TaskName::FOLLOW_JOINT: {
-                                     Eigen::VectorXd q_joint(cols);
-                                     GetTaskDynamics(task, Kp, Kv);
-                                     q_joint << Eigen::VectorXd::Constant(6, 0.0), -(qrdd_ + Kp * ep_ + Kv * ev_),
-                                             Eigen::VectorXd::Constant(cols - model_->nv, 0.0);
-                                     g_ += q_joint * GetTaskWeight(task);
-                                     break;
-                                   }
-      case TaskName::FOLLOW_COM: {
-                                   Eigen::VectorXd q_com(cols);
-                                   const Eigen::Vector3d dJqd = b_com_acc_specified_ * data_->acom[0];
-                                   const Eigen::Vector3d ep_m = des_com_pos_ - data_->com[0];
-                                   const Eigen::Vector3d ev_m = b_com_vel_specified_ * (des_com_vel_ - data_->vcom[0]);
-                                   const Eigen::Vector3d des_acc = b_com_acc_specified_ * des_com_acc_;
-                                   GetTaskDynamics(task, Kp, Kv);
-                                   const Eigen::VectorXd q_aux = -(des_acc - dJqd + Kp * ep_m + Kv * ev_m).transpose() * data_->Jcom;
-                                   q_com << q_aux, Eigen::VectorXd::Constant(cols - q_aux.size(), 0.0);
-                                   g_ += q_com * GetTaskWeight(task);
-                                   break;
-                                 }
-      case TaskName::FOLLOW_ORIENTATION: {
-                                           Eigen::SparseMatrix<double> P_orientation_task(cols, cols);
-                                           Eigen::VectorXd grad_sum = Eigen::VectorXd::Constant(model_->nv, 0.0);
-                                           Eigen::VectorXd q_base(cols);
-                                           for (const auto& p : desired_orientations_) {
-                                             // Compute frame jacobian
-                                             const int id = p.first;
-                                             Eigen::MatrixXd J(6, model_->nv); J.setZero();
-                                             pinocchio::computeFrameJacobian(*model_, *data_, q_, id,
-                                                 pinocchio::ReferenceFrame::WORLD,
-                                                 J);
-                                             J = J.block(3, 0, 3, model_->nv);
+      case TaskName::FOLLOW_JOINT: 
+        {
+          Eigen::VectorXd q_joint(cols);
+          GetTaskDynamics(task, Kp, Kv);
+          q_joint << Eigen::VectorXd::Constant(6, 0.0), -(qrdd_ + Kp * ep_ + Kv * ev_),
+                  Eigen::VectorXd::Constant(cols - model_->nv, 0.0);
+          g_ += q_joint * GetTaskWeight(task);
+          break;
+        }
+      case TaskName::FOLLOW_COM: 
+        {
+          Eigen::VectorXd q_com(cols);
+          const Eigen::Vector3d dJqd = b_com_acc_specified_ * data_->acom[0];
+          const Eigen::Vector3d ep_m = des_com_pos_ - data_->com[0];
+          const Eigen::Vector3d ev_m = b_com_vel_specified_ * (des_com_vel_ - data_->vcom[0]);
+          const Eigen::Vector3d des_acc = b_com_acc_specified_ * des_com_acc_;
+          GetTaskDynamics(task, Kp, Kv);
+          const Eigen::VectorXd q_aux = -(des_acc - dJqd + Kp * ep_m + Kv * ev_m).transpose() * data_->Jcom;
+          q_com << q_aux, Eigen::VectorXd::Constant(cols - q_aux.size(), 0.0);
+          g_ += q_com * GetTaskWeight(task);
+          break;
+        }
+      case TaskName::FOLLOW_ORIENTATION: 
+        {
+          Eigen::SparseMatrix<double> P_orientation_task(cols, cols);
+          Eigen::VectorXd grad_sum = Eigen::VectorXd::Constant(model_->nv, 0.0);
+          Eigen::VectorXd q_base(cols);
+          for (const auto& p : desired_orientations_) {
+            // Compute frame jacobian
+            const int id = p.first;
+            Eigen::MatrixXd J(6, model_->nv); J.setZero();
+            pinocchio::computeFrameJacobian(*model_, *data_, q_, id,
+                pinocchio::ReferenceFrame::WORLD,
+                J);
+            J = J.block(3, 0, 3, model_->nv);
 
-                                             //// Compute the gradient vector
-                                             // Get the angular velocity error
-                                             const auto& desired_angvel = p.second.angular_vel;
-                                             const auto veltlp = pinocchio::getFrameVelocity(*model_, *data_,
-                                                 id, pinocchio::ReferenceFrame::WORLD);
-                                             const Eigen::Vector3d current_angvel(veltlp.angular().x(),
-                                                 veltlp.angular().y(),
-                                                 veltlp.angular().z());
-                                             const Eigen::Vector3d ev = desired_angvel - current_angvel;
-                                             // Get the rotation error. The path followed to rotate the frame 
-                                             // of reference to the desired rotation depends on the parametrization
-                                             // used. But intituively, we would like to follow the path of minimum 
-                                             // rotation. That path is expresed by the angle-vector that rotates the 
-                                             // current frame to the desired frame around a single axis.
-                                             Eigen::Matrix3d R_c = data_->oMf[id].rotation(); // Current rotation
-                                             // Get the desired rotation (Euler XYZ (given) to rotation matrix)
-                                             const auto& desired_rot = p.second.orientation;
-                                             const Eigen::Matrix3d R_d = (Eigen::AngleAxisd(desired_rot(0), Eigen::Vector3d::UnitX()) *
-                                               Eigen::AngleAxisd(desired_rot(1), Eigen::Vector3d::UnitY()) *
-                                               Eigen::AngleAxisd(desired_rot(2), Eigen::Vector3d::UnitZ())).toRotationMatrix();
-                                             // Get the transformation required
-                                             const Eigen::Matrix3d R_rot = R_c.transpose() * R_d;
-                                             // Get the rotation angle
-                                             const double theta = std::acos((R_rot.trace() - 1.0) * 0.5);
-                                             // Get the rotation axis, if possible
-                                             const Eigen::Vector3d ep = (0.0 == theta) ? Eigen::Vector3d{0.0, 0.0, 0.0} : 
-                                               Eigen::Vector3d{R_rot(2, 1) - R_rot(1, 2),
-                                                               R_rot(0, 2) - R_rot(2, 0),
-                                                               R_rot(1, 0) - R_rot(0, 1)} / 2 / theta;
-                                             std::cout << "ep: " << ep.transpose() << std::endl;
-                                             //// Compute the gradient vector
-                                             GetTaskDynamics(task, Kp, Kv);
-                                             const Eigen::VectorXd q_aux = -(/*-dJqd*/ + Kp * ep + Kv * ep).transpose() * J;
+            //// Compute the gradient vector
+            // Get the angular velocity error
+            const auto& desired_angvel = p.second.angular_vel;
+            const auto veltlp = pinocchio::getFrameVelocity(*model_, *data_,
+                id, pinocchio::ReferenceFrame::WORLD);
+            const Eigen::Vector3d current_angvel(veltlp.angular().x(),
+                veltlp.angular().y(),
+                veltlp.angular().z());
+            const Eigen::Vector3d ev = desired_angvel - current_angvel;
+            // Get the rotation error. The path followed to rotate the frame 
+            // of reference to the desired rotation depends on the parametrization
+            // used. But intituively, we would like to follow the path of minimum 
+            // rotation. That path is expresed by the angle-vector that rotates the 
+            // current frame to the desired frame around a single axis.
+            Eigen::Matrix3d R_c = data_->oMf[id].rotation(); // Current rotation
+            // Get the desired rotation (Euler XYZ (given) to rotation matrix)
+            const auto& desired_rot = p.second.orientation;
+            const Eigen::Matrix3d R_d = (Eigen::AngleAxisd(desired_rot(0), Eigen::Vector3d::UnitX()) *
+                Eigen::AngleAxisd(desired_rot(1), Eigen::Vector3d::UnitY()) *
+                Eigen::AngleAxisd(desired_rot(2), Eigen::Vector3d::UnitZ())).toRotationMatrix();
+            // Get the transformation required
+            const Eigen::Matrix3d R_rot = R_c.transpose() * R_d;
+            // Get the rotation angle
+            const double theta = std::acos((R_rot.trace() - 1.0) * 0.5);
+            // Get the rotation axis, if possible
+            const Eigen::Vector3d ep = (0.0 == theta) ? Eigen::Vector3d{0.0, 0.0, 0.0} : 
+              Eigen::Vector3d{R_rot(2, 1) - R_rot(1, 2),
+                R_rot(0, 2) - R_rot(2, 0),
+                R_rot(1, 0) - R_rot(0, 1)} / 2 / theta;
+            std::cout << "ep: " << ep.transpose() << std::endl;
+            //// Compute the gradient vector
+            GetTaskDynamics(task, Kp, Kv);
+            const Eigen::VectorXd q_aux = -(/*-dJqd*/ + Kp * ep + Kv * ep).transpose() * J;
 
-                                             grad_sum += q_aux;
-                                           }
+            grad_sum += q_aux;
+          }
 
-                                           Eigen::VectorXd qbase(cols);
-                                           qbase << grad_sum, Eigen::VectorXd::Constant(cols - grad_sum.size(), 0.0);
+          Eigen::VectorXd qbase(cols);
+          qbase << grad_sum, Eigen::VectorXd::Constant(cols - grad_sum.size(), 0.0);
 
-                                           g_ += qbase * GetTaskWeight(task);
-                                         }
+          g_ += qbase * GetTaskWeight(task);
+        }
       default:
                                          std::runtime_error("Task gradient matrix not implemented!");
     }
@@ -469,27 +475,29 @@ TinyWBC::UpdateBounds(void)
         u_.segment(current_row, data_->nle.size()) = -data_->nle;
         current_row += data_->nle.size();
         break;
-      case ConstraintName::FIXED_CONTACT_CONDITION: {
-                                                      auto dJqd = ComputedJqd();
-                                                      l_.segment(current_row, dJqd.size()) = -dJqd;
-                                                      u_.segment(current_row, dJqd.size()) = -dJqd;
-                                                      current_row += dJqd.size();
-                                                      break;
-                                                    }
+      case ConstraintName::FIXED_CONTACT_CONDITION: 
+        {
+          auto dJqd = ComputedJqd();
+          l_.segment(current_row, dJqd.size()) = -dJqd;
+          u_.segment(current_row, dJqd.size()) = -dJqd;
+          current_row += dJqd.size();
+          break;
+        }
       case ConstraintName::ACTUATION_LIMITS:
-                                                    l_.segment(current_row, u_max_.size()) = -u_max_;
-                                                    u_.segment(current_row, u_max_.size()) =  u_max_;
-                                                    current_row += u_max_.size();
-                                                    break;
-      case ConstraintName::CONTACT_STABILITY: {
-                                                int n_jac = contact_jacobians_.size();
-                                                const auto lower = -Eigen::VectorXd::Constant(5 * n_jac, OsqpEigen::INFTY);
-                                                const auto upper =  Eigen::VectorXd::Constant(5 * n_jac, 0.0);
-                                                l_.segment(current_row, lower.size()) = lower;
-                                                u_.segment(current_row, upper.size()) = upper;
-                                                current_row += lower.size();
-                                                break;
-                                              }
+        l_.segment(current_row, u_max_.size()) = -u_max_;
+        u_.segment(current_row, u_max_.size()) =  u_max_;
+        current_row += u_max_.size();
+        break;
+      case ConstraintName::CONTACT_STABILITY: 
+        {
+          int n_jac = contact_jacobians_.size();
+          const auto lower = -Eigen::VectorXd::Constant(5 * n_jac, OsqpEigen::INFTY);
+          const auto upper =  Eigen::VectorXd::Constant(5 * n_jac, 0.0);
+          l_.segment(current_row, lower.size()) = lower;
+          u_.segment(current_row, upper.size()) = upper;
+          current_row += lower.size();
+          break;
+        }
       default:
                                               std::runtime_error("You have to define your constraint bounds here!");
     }
@@ -534,51 +542,53 @@ TinyWBC::UpdateLinearConstraints(void)
 
   for (const auto constraint : active_constraints_) {
     switch (constraint) {
-      case ConstraintName::EQUATION_OF_MOTION: {      // Dynamics: [M -Jt -St]
-                                                 Eigen::MatrixXd dynamics(model_->nv, cols);
-                                                 dynamics << data_->M, -J.transpose(), -S_.transpose();
-                                                 insert_in_A(dynamics, current_row, 0);
-                                                 current_row += dynamics.rows();
-                                                 break;
-                                               }
+      case ConstraintName::EQUATION_OF_MOTION: 
+        {      // Dynamics: [M -Jt -St]
+          Eigen::MatrixXd dynamics(model_->nv, cols);
+          dynamics << data_->M, -J.transpose(), -S_.transpose();
+          insert_in_A(dynamics, current_row, 0);
+          current_row += dynamics.rows();
+          break;
+        }
       case ConstraintName::FIXED_CONTACT_CONDITION:
-                                               insert_in_A(J, current_row, 0);
-                                               current_row += J.rows();
-                                               break;
+        insert_in_A(J, current_row, 0);
+        current_row += J.rows();
+        break;
       case ConstraintName::ACTUATION_LIMITS:
-                                               diagonal_insert_in_A(Eigen::VectorXd::Constant(model_->njoints - 2, 1.0),
-                                                   current_row, model_->nv + 3*n_jac);
-                                               current_row += model_->njoints - 2;
-                                               break;
-      case ConstraintName::CONTACT_STABILITY: {
-                                                if (n_jac > 0) {
-                                                  Eigen::MatrixXd friction = Eigen::MatrixXd::Zero(5 * n_jac, 3 * n_jac);
-                                                  int i = 0;
-                                                  for (const auto& contact : contacts_) {
-                                                    for (const auto& id : contact.contact_frames_ids) {
-                                                      // For the moment ignore torques
-                                                      const Eigen::Vector3d ti = contact.contact_orientation.col(0);
-                                                      const Eigen::Vector3d bi = contact.contact_orientation.col(1);
-                                                      const Eigen::Vector3d ni = contact.contact_orientation.col(2);
-                                                      // Force pointing upwards (negative to keep all bounds equal)
-                                                      friction.block<1, 3>(i * 5, i * 3) = -ni;
-                                                      // Aproximate friction cone
-                                                      friction.block<1, 3>(i * 5 + 1, i * 3) =  (ti - mu_ * ni);
-                                                      friction.block<1, 3>(i * 5 + 2, i * 3) = -(ti + mu_ * ni);
-                                                      friction.block<1, 3>(i * 5 + 3, i * 3) =  (bi - mu_ * ni);
-                                                      friction.block<1, 3>(i * 5 + 4, i * 3) = -(bi + mu_ * ni);
+        diagonal_insert_in_A(Eigen::VectorXd::Constant(model_->njoints - 2, 1.0),
+            current_row, model_->nv + 3*n_jac);
+        current_row += model_->njoints - 2;
+        break;
+      case ConstraintName::CONTACT_STABILITY: 
+        {
+          if (n_jac > 0) {
+            Eigen::MatrixXd friction = Eigen::MatrixXd::Zero(5 * n_jac, 3 * n_jac);
+            int i = 0;
+            for (const auto& contact : contacts_) {
+              for (const auto& id : contact.contact_frames_ids) {
+                // For the moment ignore torques
+                const Eigen::Vector3d ti = contact.contact_orientation.col(0);
+                const Eigen::Vector3d bi = contact.contact_orientation.col(1);
+                const Eigen::Vector3d ni = contact.contact_orientation.col(2);
+                // Force pointing upwards (negative to keep all bounds equal)
+                friction.block<1, 3>(i * 5, i * 3) = -ni;
+                // Aproximate friction cone
+                friction.block<1, 3>(i * 5 + 1, i * 3) =  (ti - mu_ * ni);
+                friction.block<1, 3>(i * 5 + 2, i * 3) = -(ti + mu_ * ni);
+                friction.block<1, 3>(i * 5 + 3, i * 3) =  (bi - mu_ * ni);
+                friction.block<1, 3>(i * 5 + 4, i * 3) = -(bi + mu_ * ni);
 
-                                                      ++i;
-                                                    }
-                                                  }
+                ++i;
+              }
+            }
 
-                                                  insert_in_A(friction, current_row, model_->nv);
-                                                  current_row += friction.rows();
-                                                  break;
-                                                }
-                                                default:
-                                                std::runtime_error("Implement your constraint here!");
-                                              }
+            insert_in_A(friction, current_row, model_->nv);
+            current_row += friction.rows();
+            break;
+          }
+          default:
+          std::runtime_error("Implement your constraint here!");
+        }
     }
   }
 }
