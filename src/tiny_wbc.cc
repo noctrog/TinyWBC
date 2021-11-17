@@ -402,6 +402,8 @@ TinyWBC::UpdateGradientMatrix(void)
           Eigen::SparseMatrix<double> P_orientation_task(cols, cols);
           Eigen::VectorXd grad_sum = Eigen::VectorXd::Constant(model_->nv, 0.0);
           Eigen::VectorXd q_base(cols);
+          // Needed to compute the dJqd term
+          pinocchio::forwardKinematics(*model_, *data_, q_, qd_, 0 * qd_);
           for (const auto& p : desired_orientations_) {
             // Compute frame jacobian
             const int id = p.first;
@@ -410,6 +412,12 @@ TinyWBC::UpdateGradientMatrix(void)
                 pinocchio::ReferenceFrame::WORLD,
                 J);
             J = J.block(3, 0, 3, model_->nv);
+
+            // Compute the dJqd term
+            Eigen::Vector3d dJqd;
+            auto a = pinocchio::getFrameClassicalAcceleration(
+                *model_, *data_, id, pinocchio::ReferenceFrame::WORLD);
+            dJqd << a.angular();
 
             //// Compute the gradient vector
             // Get the angular velocity error
@@ -432,7 +440,8 @@ TinyWBC::UpdateGradientMatrix(void)
                 Eigen::AngleAxisd(desired_rot(1), Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxisd(desired_rot(2), Eigen::Vector3d::UnitZ())).toRotationMatrix();
             // Get the transformation required
-            const Eigen::Matrix3d R_rot = R_c.transpose() * R_d;
+            const Eigen::Matrix3d R_rot = R_d.transpose() * R_c;
+            // const Eigen::Matrix3d R_rot = R_c.transpose() * R_d;
             // Get the rotation angle
             const double theta = std::acos((R_rot.trace() - 1.0) * 0.5);
             // Get the rotation axis, if possible
@@ -443,7 +452,7 @@ TinyWBC::UpdateGradientMatrix(void)
             std::cout << "ep: " << ep.transpose() << std::endl;
             //// Compute the gradient vector
             GetTaskDynamics(task, Kp, Kv);
-            const Eigen::VectorXd q_aux = -(/*-dJqd*/ + Kp * ep + Kv * ep).transpose() * J;
+            const Eigen::VectorXd q_aux = -(-dJqd + Kp * ep + Kv * ev).transpose() * J;
 
             grad_sum += q_aux;
           }
@@ -499,7 +508,7 @@ TinyWBC::UpdateBounds(void)
           break;
         }
       default:
-                                              std::runtime_error("You have to define your constraint bounds here!");
+        std::runtime_error("You have to define your constraint bounds here!");
     }
   }
 }

@@ -138,7 +138,7 @@ Controller::update()
   // Set the orientation objectives
   mWBC->SetDesiredFrameOrientation("trunk",
       desired_base_rot_euler_xyz_,
-      {0.0, 0.0, 0.0});
+      desired_base_rotvel_);
 
   // Build and solve problem
   mWBC->BuildProblem();
