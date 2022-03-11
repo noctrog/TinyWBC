@@ -10,6 +10,8 @@ All the tasks and constraints are modular and can be activated and de-activaded
 in real time. Due to the simplicity of the code, it is very straight forward to
 add new tasks and constraints.
 
+![https://camo.githubusercontent.com/fe4f6c1364a594482a515fdb70cef94d3ecd4af1dd5fc23d6fa2307a67d821ce/68747470733a2f2f692e696d6775722e636f6d2f493173766e69502e676966](https://camo.githubusercontent.com/fe4f6c1364a594482a515fdb70cef94d3ecd4af1dd5fc23d6fa2307a67d821ce/68747470733a2f2f692e696d6775722e636f6d2f493173766e69502e676966)
+
 # Installation
 
 You have to install all the required dependencies:
